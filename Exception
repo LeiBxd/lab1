@@ -1,0 +1,7 @@
+public class Exception extends RuntimeException // Класс, показывающий ошибку
+{
+    public String toString()
+    {
+        return("ERROR");
+    }
+}
