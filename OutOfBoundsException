@@ -1,0 +1,7 @@
+public class OutOfBoundsException extends RuntimeException 
+{
+    public String toString()
+    {
+        return("ERROR");
+    }
+}
