@@ -5,35 +5,42 @@ public class ListString
         head = null;
     }
 
-    public ListString(String string) // Реализация строки через список.
+    public ListString(String string) //Реализация строки через список
     {
-        head = new StringItem(); // Создание начального блока.
+        head = new StringItem(); // Создание начального блок
         StringItem currentItem = head;
+
+        char[] stringArr = string.toCharArray();
+
         int sum = 0;
-        while (sum + StringItem.SIZE <= string.length()) // Разбиение строки на части и создание блоков.
+        while (sum + StringItem.SIZE <= stringArr.length) //  Разбиение строки на части и создание блоков
         {
-            currentItem.arrayString = string.substring(sum, sum + StringItem.SIZE).toCharArray(); // Преобразование подстроки из 16 символов в массив.
+            currentItem.arrayString = new char[16];
             currentItem.size = (byte)StringItem.SIZE;
+
+            copyArray(stringArr, currentItem.arrayString, sum, sum + (StringItem.SIZE-1), 0);
+
             if (sum + StringItem.SIZE < string.length())
             {
                 currentItem.next = new StringItem();
                 currentItem = currentItem.next;
-                sum += StringItem.SIZE;
-            }
+                sum += StringItem.SIZE;            }
             else
             {
                 sum += StringItem.SIZE;
                 break;
             }
         }
-        if (sum == string.length())
+        if (sum == stringArr.length)
             return;
-        char[] lastItemArray = string.substring(sum).toCharArray(); // Преобразование оставшейся подстроки в массив символов.
-        copyArray(lastItemArray, currentItem.arrayString, 0, lastItemArray.length - 1, 0); // Массив копируется в блок.
-        currentItem.size = (byte)lastItemArray.length;
+
+        currentItem.arrayString = new char[16];
+        currentItem.size = (byte)(stringArr.length - sum);
+
+        copyArray(stringArr, currentItem.arrayString, sum, sum + (currentItem.size-1), 0);
     }
 
-    public ListString(ListString listString) // Создание строки (ListString) на основе строки (ListString), копируя данные.
+    public ListString(ListString listString) // Создание строки (ListString) на основе строки (ListString), копируя данные
     {
         StringItem currentItem = listString.head;
         if (currentItem == null)
@@ -51,23 +58,23 @@ public class ListString
         }
     }
 
-    public char charAt(int n) // Возвращает символ на заданной позиции.
+    public char charAt(int n) // Возвращает символ на заданной позици
     {
-        Coordinate position = convert(n); // Поиск блока и индекса относительно него.
-        if (position.item == null) // Проверка объекта поиска на корректность (не выходит ли index за границы блока).
+        Coordinate position = convert(n); // Поиск блока и индекса относительно него
+        if (position.item == null) // Проверка объекта поиска на корректность (не выходит ли index за границы блока)
             throw new OutOfBoundsException();
         return (position.item.arrayString[position.index]);
     }
 
-    public void setCharAt(int index, char symbol) // Замена символа на позиции на какой-либо заданный.
+    public void setCharAt(int index, char symbol) // Замена символа на позиции на какой-либо заданный
     {
-        Coordinate position = convert(index); // Поиск блока.
-        if (position.item == null) // Проверка объекта поиска на корректность (не выходит ли index за границы блока).
+        Coordinate position = convert(index); // Поиск блока
+        if (position.item == null)
             throw new OutOfBoundsException();
-        position.item.arrayString[position.index] = symbol; // Замена символа в найденном блоке.
+        position.item.arrayString[position.index] = symbol; // Замена символа в найденном блоке
     }
 
-    public int length() // Определение длины строки.
+    public int length() // Определение длины строки
     {
         int sum = 0;
         StringItem currentItem = head;
@@ -80,7 +87,7 @@ public class ListString
                     sum += currentItem.size;
                     currentItem = currentItem.next;
                 }
-                else // Если суммарная длина текущего и следующего блоков меньше или равна 16, то они склеиваются.
+                else // Если суммарная длина текущего и следующего блоков меньше или равна 16, то они склеиваются
                 {
                     currentItem.mergeWithNextItem();
                 }
@@ -94,52 +101,52 @@ public class ListString
         return sum;
     }
 
-    public void append(char symbol) // Добавляет символ в конец строки.
+    public void append(char symbol) // Добавляет символ в конец строки
     {
         StringItem lastItem = lastItem();
-        if (empty()) // Если строка пустая.
+        if (empty()) // Если строка пустая
         {
             head = new StringItem();
             head.arrayString[0] = symbol;
             head.size = 1;
             return;
         }
-        if (lastItem.size == StringItem.SIZE) // Если последний блок полный.
+        if (lastItem.size == StringItem.SIZE) //Если последний блок полный
         {
             lastItem.next = new StringItem();
             lastItem.next.arrayString[0] = symbol;
             lastItem.next.size = 1;
         }
-        else // Если есть место в последнем блоке.
+        else // Если есть место в последнем блоке
         {
             lastItem.arrayString[lastItem.size] = symbol;
             lastItem.size += 1;
         }
     }
 
-    public ListString substring(int start, int end) // Возвращает подстроку по заданным индексам начала и конца (конец не входит).
+    public ListString substring(int start, int end) //Возвращает подстроку по заданным индексам начала и конца (конец не входит)
     {
         return subListString(start, end);
     }
 
-    public ListString substring(int start) // Возвращает подстроку с заданного индекса начала до конца строки.
+    public ListString substring(int start) //Возвращает подстроку с заданного индекса начала до конца строки
     {
         return subListString(start, length());
     }
 
-    public void append(String string) // Добавляет строку (String) в конец.
+    public void append(String string) //Добавляет строку (String) в конец
     {
         ListString copied = new ListString(string);
         appendListString(copied);
     }
 
-    public void append(ListString listString) // Добавляет строку (ListString) в конец.
+    public void append(ListString listString) // Добавляет строку (ListString) в конец
     {
         ListString copied = new ListString(listString);
         appendListString(copied);
     }
 
-    public void insert(int index, ListString string) // Добавляет строку (ListString) в указанную позицию.
+    public void insert(int index, ListString string) // Добавляет строку (ListString) в указанную позицию
     {
         Coordinate position = convert(index);
         if (position.item == null)
@@ -148,7 +155,7 @@ public class ListString
         insertListString(index, copied);
     }
 
-    public void insert(int index, String string) // Добавляет строку (String) в указанную позицию.
+    public void insert(int index, String string) // Добавляет строку (String) в указанную позицию
     {
         Coordinate position = convert(index);
         if (position.item == null)
@@ -158,7 +165,7 @@ public class ListString
     }
 
     @Override
-    public String toString() // Метод возвращает цельную строку, собранную из блоков.
+    public String toString() // Метод возвращает цельную строку, собранную из блоков
     {
         char[] arrayString = new char[length()];
         int arraySize = 0;
@@ -173,39 +180,36 @@ public class ListString
 
     }
 
-    private void insertListString(int index, ListString listString) // Обобщенный метод вставки строки (ListString) в указанное место.
+    private void insertListString(int index, ListString listString) // Обобщенный метод вставки строки (ListString) в указанное место
     {
         if (index == 0)
         {
-            if (head == null) // В начало пустой строки.
+            if (head == null) // В начало пустой строки
             {
                 head = listString.head;
             }
-            else // В начало не пустой строки.
+            else // В начало не пустой строки
             {
                 listString.lastItem().next = head;
                 head = listString.head;
             }
         }
-        else // Если не в начало строки.
+        else //  Если не в начало строки
         {
             Coordinate position = convert(index);
-            Coordinate previousPosition = convert(index - 1);
-            if (position.item == previousPosition.item) // Разрыв блока, если index не является его началом.
-            {
+
+            if(position.index == 0){
+                position = convert(index-1);
+            }else{
                 divideStringItem(position.index, position.item);
-                listString.lastItem().next = position.item.next;
-                position.item.next = listString.head;
             }
-            else // Вставка между блоками.
-            {
-                listString.lastItem().next = position.item;
-                previousPosition.item.next = listString.head;
-            }
+
+            listString.lastItem().next = position.item.next;
+            position.item.next = listString.head;
         }
     }
 
-    private void divideStringItem(int index, StringItem stringItem) // Делит блок на два в указанной позиции.
+    private void divideStringItem(int index, StringItem stringItem) // Делит блок на два в указанной позиции
     {
         StringItem copied = new StringItem(stringItem, index, stringItem.size - 1);
         copied.next = stringItem.next;
@@ -213,7 +217,7 @@ public class ListString
         stringItem.size = index;
     }
 
-    private void appendListString(ListString listString) // Обобщенный метод вставки указанной строки (ListString) в конец изначальной.
+    private void appendListString(ListString listString) // Обобщенный метод вставки указанной строки (ListString) в конец изначальной
     {
         if (empty())
         {
@@ -223,7 +227,7 @@ public class ListString
         lastItem.next = listString.head;
     }
 
-    private ListString subListString(int start, int end) // Обобщенный метод, возвращающий подстроку.
+    private ListString subListString(int start, int end) // Обобщенный метод, возвращающий подстроку
     {
         Coordinate posStart = convert(start);
         Coordinate posEnd = convert(end-1);
@@ -235,16 +239,16 @@ public class ListString
         StringItem currentItem = posStart.item;
         StringItem currentSubstringItem = null;
 
-        if (posStart.item == posEnd.item) // Если начало и конец в одном блоке.
+        if (posStart.item == posEnd.item) // Если начало и конец в одном блоке
         {
             substring.head = new StringItem(currentItem, posStart.index, posEnd.index);
             return substring;
         }
 
-        substring.head = new StringItem(currentItem, posStart.index, currentItem.size - 1); // Создает первый блок подстроки.
+        substring.head = new StringItem(currentItem, posStart.index, currentItem.size - 1);
         currentSubstringItem = substring.head;
 
-        while (currentItem != posEnd.item) // Пока не дошли до конечного блока.
+        while (currentItem != posEnd.item)
         {
             currentSubstringItem.next = new StringItem(currentItem.next, 0, currentItem.next.size - 1);
             currentSubstringItem = currentSubstringItem.next;
@@ -255,7 +259,7 @@ public class ListString
         return substring;
     }
 
-    private static void copyArray(char[] fromArray, char[] toArray, int start, int end, int toStart) // Копируем символы со start по end включительно.
+    private static void copyArray(char[] fromArray, char[] toArray, int start, int end, int toStart) // Копируем символы со start по end включительно
     {
         if (end - start > toArray.length - 1 - toStart)
         {
@@ -267,7 +271,7 @@ public class ListString
         }
     }
 
-    private static class Coordinate // Хранение позиции символа по блоку и индексу.
+    private static class Coordinate // Хранение позиции символа по блоку и индексу
     {
         private StringItem item;
         private int index;
@@ -279,7 +283,7 @@ public class ListString
         }
     }
 
-    private StringItem lastItem() // Возвращает ссылку на последний блок.
+    private StringItem lastItem() // Возвращает ссылку на последний блок
     {
         StringItem currentItem = head;
         while (currentItem != null)
@@ -296,7 +300,7 @@ public class ListString
         return null;
     }
 
-    private Coordinate convert(int userIndex) // Преобразует индекс, вводимый пользователем в "координаты" вида [item; index].
+    private Coordinate convert(int userIndex) // Преобразование индекса в координаты
     {
         StringItem currentItem = head;
         if (currentItem == null)
@@ -323,16 +327,15 @@ public class ListString
         return (head == null);
     }
 
-    private static class StringItem // Класс блока.
+    private static class StringItem // Класс блока
     {
         private char[] arrayString;
         private int size;
-        private  StringItem next;
+        private StringItem next;
         private static final int SIZE = 16;
 
         private StringItem()
         {
-            arrayString = new char[SIZE];
             size = (byte) 0;
             next = null;
         }
@@ -345,7 +348,7 @@ public class ListString
             next = null;
         }
 
-        private void mergeWithNextItem() // Метод склеивания блоков.
+        private void mergeWithNextItem() // метод склеивания блоков
         {
             StringItem nextItem = next;
             if (next == null)
@@ -353,7 +356,7 @@ public class ListString
                 return;
             }
             copyArray(nextItem.arrayString, arrayString, 0,nextItem.size - 1, size);
-            // Копирование символов из следующего блока в текущий.
+            // копирование из следующиего блока в текущий
             size += nextItem.size;
             next = nextItem.next;
         }
